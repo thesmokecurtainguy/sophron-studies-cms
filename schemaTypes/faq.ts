@@ -8,7 +8,6 @@ export default defineType({
   name: 'faq',
   title: 'FAQ',
   type: 'document',
-  icon: () => '❓',
   fields: [
     defineField({
       name: 'question',
@@ -128,7 +127,6 @@ export default defineType({
         ]
           .filter(Boolean)
           .join(' • '),
-        media: featured ? '⭐' : '❓',
       }
     },
   },

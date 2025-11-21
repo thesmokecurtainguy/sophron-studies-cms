@@ -8,7 +8,6 @@ export default defineType({
   name: 'faqCategory',
   title: 'FAQ Category',
   type: 'document',
-  icon: () => '📁',
   fields: [
     defineField({
       name: 'title',
