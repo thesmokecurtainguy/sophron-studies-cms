@@ -15,7 +15,7 @@ if (!token) {
 
 // Use the project details from your sanity.config.ts
 const client = createClient({
-  projectId: 'o1brandp',
+  projectId: '7a9l1mtl',
   dataset: 'private',
   useCdn: false, // `false` to ensure fresh data
   token: token, // Use the token passed as argument

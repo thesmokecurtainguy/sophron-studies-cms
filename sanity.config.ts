@@ -7,7 +7,7 @@ export default defineConfig({
   name: 'default',
   title: 'sophron-studies',
 
-  projectId: 'o1brandp',
+  projectId: '7a9l1mtl',
   dataset: 'private',
 
   plugins: [
