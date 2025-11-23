@@ -41,6 +41,12 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'seo',
+      description: 'Search engine optimization metadata',
+    }),
+    defineField({
       name: 'aboutHeroSection',
       title: 'About Hero Section',
       type: 'aboutHeroSection',

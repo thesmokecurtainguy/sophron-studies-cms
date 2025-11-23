@@ -5,7 +5,7 @@
  * SANITY CONTENT MIGRATION SCRIPT
  * ========================================
  * 
- * Migrates products, blog posts, categories, authors, and images
+ * Migrates products, blog posts, categories, authors, pages, and images
  * from source Sanity project (o1brandp) to destination project (7a9l1mtl)
  * 
  * Usage:
@@ -36,7 +36,7 @@ const CONFIG = {
   source: {
     projectId: process.env.SANITY_SOURCE_PROJECT_ID || 'o1brandp',
     token: process.env.SANITY_SOURCE_TOKEN,
-    dataset: process.env.SANITY_SOURCE_DATASET || 'production',
+    dataset: process.env.SANITY_SOURCE_DATASET || 'private',
   },
   destination: {
     projectId: process.env.SANITY_DEST_PROJECT_ID || '7a9l1mtl',
@@ -126,6 +126,10 @@ const migrationState = {
     migrated: 0,
     failed: [],
   },
+  pages: {
+    migrated: 0,
+    failed: [],
+  },
 };
 
 // ========================================
@@ -170,11 +174,13 @@ async function confirmMigration(sourceCounts, destCounts) {
   console.log('  Posts:', sourceCounts.posts);
   console.log('  Categories:', sourceCounts.categories);
   console.log('  Authors:', sourceCounts.authors);
+  console.log('  Pages:', sourceCounts.pages);
   console.log('\nDestination Project:', CONFIG.destination.projectId);
   console.log('  Existing Products:', destCounts.products);
   console.log('  Existing Posts:', destCounts.posts);
   console.log('  Existing Categories:', destCounts.categories);
   console.log('  Existing Authors:', destCounts.authors);
+  console.log('  Existing Pages:', destCounts.pages);
   console.log('\n⚠️  This will create NEW documents in the destination project.');
   console.log('⚠️  Existing documents will NOT be deleted.');
   console.log('\n' + '='.repeat(60));
@@ -303,6 +309,30 @@ async function fetchAllAuthors() {
   }
 }
 
+async function fetchAllPages() {
+  log('Fetching all page documents from source...');
+  
+  const pageTypes = ['homePage', 'aboutPage', 'blogHero', 'newsletterSection'];
+  const allPages = [];
+  
+  for (const pageType of pageTypes) {
+    try {
+      const query = `*[_type == "${pageType}" && !(_id in path("drafts.**"))]`;
+      const pages = await sourceClient.fetch(query);
+      
+      if (pages.length > 0) {
+        logSuccess(`Found ${pages.length} ${pageType} document(s)`);
+        allPages.push(...pages);
+      }
+    } catch (error) {
+      logWarning(`Failed to fetch ${pageType}:`, error.message);
+    }
+  }
+  
+  logSuccess(`Found ${allPages.length} total page documents`);
+  return allPages;
+}
+
 async function getDocumentCounts(client) {
   const counts = {};
   
@@ -311,6 +341,7 @@ async function getDocumentCounts(client) {
     counts.posts = await client.fetch(`count(*[_type == "post" && !(_id in path("drafts.**"))])`);
     counts.categories = await client.fetch(`count(*[_type == "category" && !(_id in path("drafts.**"))])`);
     counts.authors = await client.fetch(`count(*[_type == "author" && !(_id in path("drafts.**"))])`);
+    counts.pages = await client.fetch(`count(*[_type in ["homePage", "aboutPage", "blogHero", "newsletterSection"] && !(_id in path("drafts.**"))])`);
   } catch (error) {
     logError('Failed to get document counts:', error.message);
     throw error;
@@ -592,6 +623,131 @@ async function migrateAuthors(authors) {
 }
 
 // ========================================
+// PAGE MIGRATION (homePage, aboutPage, blogHero, newsletterSection)
+// ========================================
+
+async function migratePages(pages) {
+  log(`\n${'='.repeat(60)}`);
+  log('📄 MIGRATING PAGE DOCUMENTS');
+  log('='.repeat(60));
+  
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const pageTitle = page.title || page.internalTitle || page._type;
+    logProgress(i + 1, pages.length, `Migrating page: ${pageTitle} (${page._type})`);
+    
+    try {
+      // Check if page already exists by _id
+      const existing = await destClient.fetch(
+        `*[_id == $id][0]`,
+        { id: page._id }
+      );
+      
+      if (existing) {
+        logWarning(`Page already exists: ${pageTitle} (${page._type}), skipping`);
+        continue;
+      }
+      
+      if (CONFIG.dryRun) {
+        logSuccess(`[DRY RUN] Would create page: ${pageTitle} (${page._type})`);
+        migrationState.pages.migrated++;
+        continue;
+      }
+      
+      // Prepare page document (remove internal fields)
+      const { _createdAt, _updatedAt, _rev, ...pageData } = page;
+      
+      // Migrate all images in the page (recursively)
+      const imageRefs = extractImageReferences(pageData);
+      for (const ref of imageRefs) {
+        await migrateImage(ref);
+      }
+      
+      // Update all image references
+      const updatedPageData = updateImageReferences(
+        pageData,
+        migrationState.images.assetMap
+      );
+      
+      // Update all document references (authors, categories, pages)
+      function updateReferences(obj) {
+        if (!obj || typeof obj !== 'object') return obj;
+        
+        if (Array.isArray(obj)) {
+          return obj.map(item => updateReferences(item));
+        }
+        
+        const updated = { ...obj };
+        
+        // Handle reference types - try all possible mappings
+        if (updated._type === 'reference' && updated._ref) {
+          const oldRef = updated._ref;
+          let newRef = null;
+          
+          // Try author mapping first
+          newRef = migrationState.authors.idMap.get(oldRef);
+          if (newRef) {
+            log(`  Mapped author reference: ${oldRef} -> ${newRef}`);
+            updated._ref = newRef;
+          } 
+          // Try category mapping
+          else {
+            newRef = migrationState.categories.idMap.get(oldRef);
+            if (newRef) {
+              log(`  Mapped category reference: ${oldRef} -> ${newRef}`);
+              updated._ref = newRef;
+            }
+            // For page-to-page references (e.g., newsletterSection)
+            // Since pages are created with the same _id, the reference stays valid
+            // But we log it for tracking
+            else if (oldRef.includes('newsletter') || oldRef.includes('Page') || oldRef.includes('Hero')) {
+              log(`  Page reference kept (same _id in both projects): ${oldRef}`);
+              // Keep the original reference as pages maintain their _id
+            }
+            // Reference not found in any map
+            else {
+              logWarning(`  No mapping found for reference: ${oldRef} (keeping original)`);
+              // Keep the original reference - it might be valid in destination
+            }
+          }
+        }
+        
+        // Recursively update nested objects
+        Object.keys(updated).forEach(key => {
+          if (typeof updated[key] === 'object' && updated[key] !== null) {
+            updated[key] = updateReferences(updated[key]);
+          }
+        });
+        
+        return updated;
+      }
+      
+      const finalPageData = updateReferences(updatedPageData);
+      
+      // Create in destination
+      const created = await destClient.create(finalPageData);
+      
+      logSuccess(`Created page: ${pageTitle} (${page._type}) -> ${created._id}`);
+      migrationState.pages.migrated++;
+      
+    } catch (error) {
+      logError(`Failed to migrate page ${pageTitle} (${page._type}):`, error.message);
+      migrationState.pages.failed.push({
+        id: page._id,
+        type: page._type,
+        title: pageTitle,
+        error: error.message,
+      });
+    }
+  }
+  
+  logSuccess(`\nPages migrated: ${migrationState.pages.migrated}`);
+  if (migrationState.pages.failed.length > 0) {
+    logWarning(`Pages failed: ${migrationState.pages.failed.length}`);
+  }
+}
+
+// ========================================
 // PRODUCT MIGRATION
 // ========================================
 
@@ -796,12 +952,14 @@ async function verifyMigration() {
   console.log(`  Posts:      ${sourceCounts.posts}`);
   console.log(`  Categories: ${sourceCounts.categories}`);
   console.log(`  Authors:    ${sourceCounts.authors}`);
+  console.log(`  Pages:      ${sourceCounts.pages}`);
   
   console.log('\nDestination Project Counts:');
   console.log(`  Products:   ${destCounts.products}`);
   console.log(`  Posts:      ${destCounts.posts}`);
   console.log(`  Categories: ${destCounts.categories}`);
   console.log(`  Authors:    ${destCounts.authors}`);
+  console.log(`  Pages:      ${destCounts.pages}`);
   
   // Spot check: verify 3-5 random products
   console.log('\n📋 Spot Checking Random Products...');
@@ -846,6 +1004,7 @@ function printFinalReport() {
   console.log(`  Categories: ${migrationState.categories.processed.size}`);
   console.log(`  Authors:    ${migrationState.authors.processed.size}`);
   console.log(`  Images:     ${migrationState.images.assetMap.size}`);
+  console.log(`  Pages:      ${migrationState.pages.migrated}`);
   console.log(`  Products:   ${migrationState.products.migrated}`);
   console.log(`  Posts:      ${migrationState.posts.migrated}`);
   
@@ -853,6 +1012,7 @@ function printFinalReport() {
     migrationState.categories.failed.length > 0 ||
     migrationState.authors.failed.length > 0 ||
     migrationState.images.failed.length > 0 ||
+    migrationState.pages.failed.length > 0 ||
     migrationState.products.failed.length > 0 ||
     migrationState.posts.failed.length > 0
   ) {
@@ -876,6 +1036,13 @@ function printFinalReport() {
       console.log(`  Images: ${migrationState.images.failed.length}`);
       migrationState.images.failed.forEach(f => 
         console.log(`    - ${f.assetId}: ${f.error}`)
+      );
+    }
+    
+    if (migrationState.pages.failed.length > 0) {
+      console.log(`  Pages: ${migrationState.pages.failed.length}`);
+      migrationState.pages.failed.forEach(f => 
+        console.log(`    - ${f.title} (${f.type}): ${f.error}`)
       );
     }
     
@@ -945,12 +1112,14 @@ async function main() {
     // Fetch all data
     const categories = await fetchAllCategories();
     const authors = await fetchAllAuthors();
+    const pages = await fetchAllPages();
     const products = await fetchAllProducts();
     const posts = await fetchAllPosts();
     
     // Migrate in order (dependencies first)
     await migrateCategories(categories);
     await migrateAuthors(authors);
+    await migratePages(pages);
     await migrateProducts(products);
     await migratePosts(posts);
     

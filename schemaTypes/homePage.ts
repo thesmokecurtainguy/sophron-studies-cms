@@ -14,6 +14,12 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'seo',
+      description: 'Search engine optimization metadata',
+    }),
+    defineField({
       name: 'heroSection',
       title: 'Hero Section',
       type: 'heroSection', // Will reference the heroSection object type
