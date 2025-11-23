@@ -29,3 +29,7 @@
 # Dotenv and similar local-only files
 *.local
 package-lock.json
+
+# Migration environment variables
+.env.migration
+.env.migration.local

@@ -33,7 +33,7 @@ if (!token) {
 // Sanity client configuration
 const client = createClient({
   projectId: '7a9l1mtl',
-  dataset: 'private',
+  dataset: 'production',
   useCdn: false,
   token: token,
   apiVersion: '2023-05-03'
