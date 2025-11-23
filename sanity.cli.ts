@@ -5,7 +5,7 @@ export default defineCliConfig({
     projectId: '7a9l1mtl',
     dataset: 'production'
   },
-  studioHost: 'sophronstudies',
+  studioHost: 'sophron-studies',
   /**
    * Enable auto-updates for studios.
    * Learn more at https://www.sanity.io/docs/cli#auto-updates
