@@ -73,6 +73,21 @@ export default defineConfig({
                   ])
               ),
 
+            S.listItem()
+              .title('❓ FAQ')
+              .child(
+                S.list()
+                  .title('FAQ Content')
+                  .items([
+                    S.listItem()
+                      .title('FAQ Categories')
+                      .child(S.documentTypeList('faqCategory').title('FAQ Categories')),
+                    S.listItem()
+                      .title('FAQs')
+                      .child(S.documentTypeList('faq').title('FAQs')),
+                  ])
+              ),
+
             // Divider
             S.divider(),
 
@@ -80,7 +95,7 @@ export default defineConfig({
             ...S.documentTypeListItems().filter(
               (listItem) => {
                 const id = listItem.getId()
-                return id && !['homePage', 'aboutPage', 'blogHero', 'newsletterSection', 'post', 'author', 'product', 'category', 'upcomingReleaseSection'].includes(id)
+                return id && !['homePage', 'aboutPage', 'blogHero', 'newsletterSection', 'post', 'author', 'product', 'category', 'upcomingReleaseSection', 'faqCategory', 'faq'].includes(id)
               }
             ),
           ])
