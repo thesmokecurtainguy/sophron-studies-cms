@@ -18,6 +18,7 @@ import testimonialsSection from './testimonialsSection'
 import faqCategory from './faqCategory'
 import faq from './faq'
 import seo from './seo'
+import {newsletterCampaignType} from '../schemas/newsletter'
 
 export const schemaTypes = [
   // Document types
@@ -32,6 +33,7 @@ export const schemaTypes = [
   upcomingReleaseSection,
   faqCategory,
   faq,
+  newsletterCampaignType,
 
   // Object types (used within documents)
   blockContent,

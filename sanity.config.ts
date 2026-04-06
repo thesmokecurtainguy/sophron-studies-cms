@@ -54,6 +54,21 @@ export default defineConfig({
                   ])
               ),
 
+            // Newsletter campaigns
+            S.listItem()
+              .title('✉️ Newsletter Campaigns')
+              .child(
+                S.list()
+                  .title('Newsletter Campaigns')
+                  .items([
+                    S.listItem()
+                      .title('All newsletter campaigns')
+                      .child(
+                        S.documentTypeList('newsletterCampaign').title('Newsletter Campaigns')
+                      ),
+                  ])
+              ),
+
             // Shop Section
             S.listItem()
               .title('🛍️ Shop')
@@ -95,7 +110,7 @@ export default defineConfig({
             ...S.documentTypeListItems().filter(
               (listItem) => {
                 const id = listItem.getId()
-                return id && !['homePage', 'aboutPage', 'blogHero', 'newsletterSection', 'post', 'author', 'product', 'category', 'upcomingReleaseSection', 'faqCategory', 'faq'].includes(id)
+                return id && !['homePage', 'aboutPage', 'blogHero', 'newsletterSection', 'post', 'author', 'newsletterCampaign', 'product', 'category', 'upcomingReleaseSection', 'faqCategory', 'faq'].includes(id)
               }
             ),
           ])
