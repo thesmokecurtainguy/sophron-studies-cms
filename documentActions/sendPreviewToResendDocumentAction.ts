@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import {EnvelopeIcon} from '@sanity/icons'
 import {useToast} from '@sanity/ui'
 import {useCallback, useState} from 'react'
@@ -6,15 +8,12 @@ import {type DocumentActionComponent} from 'sanity'
 const SEND_NEWSLETTER_URL = 'https://www.sophronstudies.com/api/send-newsletter'
 
 /**
- * Studio only inlines env vars prefixed with SANITY_STUDIO_ into the browser bundle.
- * Set SANITY_STUDIO_NEWSLETTER_SECRET to match SANITY_NEWSLETTER_SECRET on the API host.
+ * Sanity Studio is built with Vite; SANITY_STUDIO_* keys from .env are exposed on import.meta.env.
+ * Use the same value as SANITY_NEWSLETTER_SECRET on the website API.
  */
 function getNewsletterSecret(): string {
-  if (typeof process === 'undefined') return ''
   return (
-    process.env.SANITY_STUDIO_NEWSLETTER_SECRET ||
-    process.env.SANITY_NEWSLETTER_SECRET ||
-    ''
+    (import.meta.env as Record<string, string>).SANITY_STUDIO_NEWSLETTER_SECRET || ''
   )
 }
 
