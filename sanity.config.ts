@@ -1,6 +1,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
+import {sendPreviewToResendDocumentAction} from './documentActions/sendPreviewToResendDocumentAction'
 import {schemaTypes} from './schemaTypes'
 
 export default defineConfig({
@@ -120,5 +121,14 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
+  },
+
+  document: {
+    actions: (prev, context) => {
+      if (context.schemaType !== 'newsletterCampaign') {
+        return prev
+      }
+      return [...prev, sendPreviewToResendDocumentAction]
+    },
   },
 })

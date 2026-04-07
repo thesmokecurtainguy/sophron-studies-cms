@@ -33,3 +33,4 @@ package-lock.json
 # Migration environment variables
 .env.migration
 .env.migration.local
+.env
