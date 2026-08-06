@@ -80,7 +80,152 @@ export const productType = defineType({
         ],
       },
     }),
-    // Add other fields as needed, e.g., categories, dimensions, weight for shipping, etc.
+    defineField({
+      name: 'difficulty',
+      title: 'Difficulty',
+      type: 'string',
+      description: 'Study difficulty level',
+      options: {
+        list: [
+          { title: 'Beginner', value: 'Beginner' },
+          { title: 'Intermediate', value: 'Intermediate' },
+          { title: 'Advanced', value: 'Advanced' },
+        ],
+        layout: 'radio',
+      },
+    }),
+    defineField({
+      name: 'duration',
+      title: 'Duration',
+      type: 'string',
+      description: 'How long the study takes (e.g. "8 weeks")',
+    }),
+    defineField({
+      name: 'targetAudience',
+      title: 'Target Audience',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'Who this study is designed for',
+    }),
+    defineField({
+      name: 'includesLeaderGuide',
+      title: 'Includes Leader Guide?',
+      type: 'boolean',
+      description: 'Whether this product includes a leader guide',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'shortDescription',
+      title: 'Short Description',
+      type: 'text',
+      rows: 3,
+      description: '1–2 sentences for category/listing pages',
+    }),
+    defineField({
+      name: 'relatedProducts',
+      title: 'Related Products',
+      type: 'array',
+      of: [{ type: 'reference', to: { type: 'product' } }],
+      description: 'Other products to suggest alongside this one',
+    }),
+    defineField({
+      name: 'samplePages',
+      title: 'Sample Pages',
+      type: 'array',
+      of: [{ type: 'image', options: { hotspot: true } }],
+      description: 'Sample page images for product previews',
+    }),
+    defineField({
+      name: 'faqs',
+      title: 'FAQs',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'question',
+              title: 'Question',
+              type: 'string',
+            }),
+            defineField({
+              name: 'answer',
+              title: 'Answer',
+              type: 'text',
+              rows: 4,
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'question',
+              subtitle: 'answer',
+            },
+          },
+        },
+      ],
+      description: 'Product-specific frequently asked questions',
+    }),
+    defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'seo',
+      description: 'Search engine optimization metadata',
+    }),
+    defineField({
+      name: 'structuredData',
+      title: 'Structured Data',
+      type: 'object',
+      description: 'Product schema.org / rich-result metadata',
+      fields: [
+        defineField({
+          name: 'brand',
+          title: 'Brand',
+          type: 'string',
+        }),
+        defineField({
+          name: 'sku',
+          title: 'SKU',
+          type: 'string',
+        }),
+        defineField({
+          name: 'gtin',
+          title: 'GTIN',
+          type: 'string',
+        }),
+        defineField({
+          name: 'mpn',
+          title: 'MPN',
+          type: 'string',
+        }),
+        defineField({
+          name: 'availability',
+          title: 'Availability',
+          type: 'string',
+        }),
+        defineField({
+          name: 'condition',
+          title: 'Condition',
+          type: 'string',
+        }),
+        defineField({
+          name: 'aggregateRating',
+          title: 'Aggregate Rating',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'ratingValue',
+              title: 'Rating Value',
+              type: 'number',
+            }),
+            defineField({
+              name: 'reviewCount',
+              title: 'Review Count',
+              type: 'number',
+            }),
+          ],
+        }),
+      ],
+    }),
   ],
   validation: (Rule) => Rule.custom((doc: any) => {
     const hasPrice = doc?.price && doc.price > 0;
