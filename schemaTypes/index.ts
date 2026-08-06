@@ -15,6 +15,9 @@ import aboutGallerySection from './aboutGallerySection'
 import { productType } from './productType'
 import { categoryType } from './categoryType'
 import testimonialsSection from './testimonialsSection'
+import faqCategory from './faqCategory'
+import faq from './faq'
+import seo from './seo'
 
 export const schemaTypes = [
   // Document types
@@ -27,6 +30,8 @@ export const schemaTypes = [
   productType,
   categoryType,
   upcomingReleaseSection,
+  faqCategory,
+  faq,
 
   // Object types (used within documents)
   blockContent,
@@ -37,4 +42,5 @@ export const schemaTypes = [
   aboutBioSection,
   aboutGallerySection,
   testimonialsSection,
+  seo,
 ]

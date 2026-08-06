@@ -1,0 +1,37 @@
+# ========================================
+# SANITY MIGRATION ENVIRONMENT VARIABLES
+# ========================================
+#
+# Copy these lines, fill in your actual token values, and run them in your terminal
+# before running the migration script
+#
+# To get your Sanity tokens:
+# 1. Go to https://www.sanity.io/manage
+# 2. Select your project
+# 3. Go to Settings > API > Tokens
+# 4. Create a token with "Read" permissions for source
+# 5. Create a token with "Write" permissions for destination
+
+# Copy these lines and paste in your terminal (replace the token values with your real tokens):
+
+export SANITY_SOURCE_PROJECT_ID=o1brandp
+export SANITY_SOURCE_TOKEN=your_source_read_token_here
+export SANITY_SOURCE_DATASET=production
+
+export SANITY_DEST_PROJECT_ID=7a9l1mtl
+export SANITY_DEST_TOKEN=your_destination_write_token_here
+export SANITY_DEST_DATASET=production
+
+export SANITY_API_VERSION=2023-05-03
+
+# OPTIONAL: Uncomment for test modes
+# export DRY_RUN=true          # Test mode - no actual changes
+# export VERIFY_ONLY=true      # Only verify counts, don't migrate
+
+# After setting these, verify they're loaded:
+# echo $SANITY_SOURCE_TOKEN
+# echo $SANITY_DEST_TOKEN
+
+# Then run the migration:
+# node scripts/migrate-content.js
+
