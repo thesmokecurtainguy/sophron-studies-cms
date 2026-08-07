@@ -41,15 +41,15 @@ export default defineType({
       fields: [
         defineField({
           name: 'newRelease',
-          title: 'New Release',
+          title: 'Coming Soon',
           type: 'reference',
           to: [{ type: 'upcomingReleaseSection' }],
         }),
         defineField({
           name: 'showNewRelease',
-          title: 'Show New Release Section',
+          title: 'Show Coming Soon Section',
           type: 'boolean',
-          description: 'Toggle to show/hide the New Release section on the website',
+          description: 'Toggle to show/hide the Coming Soon section on the website',
           initialValue: false,
         }),
         defineField({

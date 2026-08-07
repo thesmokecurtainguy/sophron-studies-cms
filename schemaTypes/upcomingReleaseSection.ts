@@ -58,7 +58,7 @@ export default defineType({
       options: {
         list: [
           { title: 'Coming Soon', value: 'comingSoon' },
-          { title: 'New Release', value: 'newRelease' }
+          { title: 'Coming Soon', value: 'newRelease' }
         ],
         layout: 'radio'
       },
