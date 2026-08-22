@@ -13,10 +13,10 @@ if (!token) {
   process.exit(1);
 }
 
-// Use the project details from your sanity.config.ts
+// Live Sophron Studies identity (must match liveSanity.ts)
 const client = createClient({
-  projectId: '7a9l1mtl',
-  dataset: 'production',
+  projectId: 'o1brandp',
+  dataset: 'private',
   useCdn: false, // `false` to ensure fresh data
   token: token, // Use the token passed as argument
   apiVersion: '2023-05-03'
